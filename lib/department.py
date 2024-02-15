@@ -2,7 +2,6 @@
 
 from __init__ import CURSOR, CONN
 
-
 class Department:
 
     # Dictionary of objects saved to the database.
@@ -16,6 +15,8 @@ class Department:
     def __repr__(self):
         return f"<Department {self.id}: {self.name}, {self.location}>"
 
+
+
     @classmethod
     def create_table(cls):
         """ Create a new table to persist the attributes of Department instances """
@@ -27,6 +28,8 @@ class Department:
         """
         CURSOR.execute(sql)
         CONN.commit()
+        
+
 
     @classmethod
     def drop_table(cls):
@@ -36,6 +39,8 @@ class Department:
         """
         CURSOR.execute(sql)
         CONN.commit()
+
+
 
     def save(self):
         """ Insert a new row with the name and location values of the current Department instance.
@@ -52,12 +57,16 @@ class Department:
         self.id = CURSOR.lastrowid
         type(self).all[self.id] = self
 
+
+
     @classmethod
     def create(cls, name, location):
         """ Initialize a new Department instance and save the object to the database """
         department = cls(name, location)
         department.save()
         return department
+
+
 
     def update(self):
         """Update the table row corresponding to the current Department instance."""
@@ -68,6 +77,8 @@ class Department:
         """
         CURSOR.execute(sql, (self.name, self.location, self.id))
         CONN.commit()
+
+
 
     def delete(self):
         """Delete the table row corresponding to the current Department instance,
@@ -87,6 +98,8 @@ class Department:
         # Set the id to None
         self.id = None
 
+
+
     @classmethod
     def instance_from_db(cls, row):
         """Return a Department object having the attribute values from the table row."""
@@ -104,6 +117,8 @@ class Department:
             cls.all[department.id] = department
         return department
 
+
+
     @classmethod
     def get_all(cls):
         """Return a list containing a Department object per row in the table"""
@@ -115,6 +130,8 @@ class Department:
         rows = CURSOR.execute(sql).fetchall()
 
         return [cls.instance_from_db(row) for row in rows]
+
+
 
     @classmethod
     def find_by_id(cls, id):
@@ -128,6 +145,8 @@ class Department:
         row = CURSOR.execute(sql, (id,)).fetchone()
         return cls.instance_from_db(row) if row else None
 
+
+
     @classmethod
     def find_by_name(cls, name):
         """Return a Department object corresponding to first table row matching specified name"""
@@ -139,3 +158,19 @@ class Department:
 
         row = CURSOR.execute(sql, (name,)).fetchone()
         return cls.instance_from_db(row) if row else None
+
+
+
+    def employees(self):
+        """Return list of employees associated with current department"""
+        from employee import Employee
+        sql = """
+            SELECT * FROM employees
+            WHERE department_id = ?
+        """
+        CURSOR.execute(sql, (self.id,),)
+
+        rows = CURSOR.fetchall()
+        return [
+            Employee.instance_from_db(row) for row in rows
+        ]
